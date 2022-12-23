@@ -2,6 +2,8 @@ import os
 import traceback
 import sys
 
+from io import BytesIO
+
 try:
     import qrcode
 except ImportError:
@@ -24,8 +26,6 @@ except ImportError:
         input("Нажмите на любую клавишу для выхода...")
         sys.exit()
 
-
-from io import BytesIO
 
 try:
     from colorama import Fore, init
@@ -95,6 +95,7 @@ async def on_startup(_):
 async def start_command(msg: types.Message):
     await msg.reply("*👋 Привет, этот бот позволяет делать QR-коды из любого текста или ссылки. Просто отправь в чат с ботом ссылку на сайт.*", parse_mode="markdown", reply_markup=start_keyboard, reply=False)
 
+
 @dp.message_handler()
 async def on_message(msg: types.Message):
     if (msg.text == "💿 Информация"):
@@ -105,43 +106,43 @@ async def on_message(msg: types.Message):
         count += 1
         if len(msg.text) < 500:
             print(Fore.LIGHTBLUE_EX +
-                f"\n\n[{count}] – Начинаю генерацию QR-кода для пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}, количество символов: {len(msg.text)})")
+                  f"\n\n[{count}] – Начинаю генерацию QR-кода для пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}, количество символов: {len(msg.text)})")
             status = await msg.reply("⚙ Генерирую QR-код...", reply=False)
 
             try:
                 print(Fore.LIGHTBLUE_EX +
-                    f"""[{count}] – Генерация QR-кода "{msg.text}"..""")
+                      f"""[{count}] – Генерация QR-кода "{msg.text}"..""")
                 img = qrcode.make(msg.text)
 
                 print(Fore.LIGHTBLUE_EX +
-                    f"[{count}] – Сохраняю QR-код в память..")
+                      f"[{count}] – Сохраняю QR-код в память..")
                 bio = BytesIO()
                 bio.name = 'qr.jpeg'
                 img.save(bio, "jpeg")
                 bio.seek(0)
 
                 print(Fore.LIGHTBLUE_EX +
-                    f"[{count}] – Отправляю QR-код пользователю {msg.from_user.full_name} (ID: {msg.from_user.id})")
+                      f"[{count}] – Отправляю QR-код пользователю {msg.from_user.full_name} (ID: {msg.from_user.id})")
                 await msg.reply_photo(photo=bio, reply=False)
                 await status.edit_text("*✅ QR-код успешно сгенерирован!*", parse_mode="markdown")
 
                 print(Fore.LIGHTBLUE_EX +
-                    f"[{count}] – Удаляю переменные из памяти..")
-                
+                      f"[{count}] – Удаляю переменные из памяти..")
+
                 del bio
                 del img
                 del status
 
                 print(Fore.LIGHTWHITE_EX +
-                    f"[{count}] – QR-код от пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}) успешно обработан")
+                      f"[{count}] – QR-код от пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}) успешно обработан")
                 return
             except Exception as ex:
                 print(Fore.LIGHTRED_EX +
-                    f"Ошибка при генерации QR-кода для пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}):\n{traceback.format_exc().strip()}\n Информация о сообщении: {msg}")
+                      f"Ошибка при генерации QR-кода для пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}):\n{traceback.format_exc().strip()}\n Информация о сообщении: {msg}")
                 await status.edit_text("*❌ Произошла неизвестная ошибка при генерации QR-кода. Повторите попытку позже.*", parse_mode="markdown")
         else:
             print(Fore.LIGHTCYAN_EX +
-                f"\n[{count}] Не удалось обработать QR-код пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}) из-за превышения допустимого лимита значения (> 500)")
+                  f"\n[{count}] Не удалось обработать QR-код пользователя {msg.from_user.full_name} (ID: {msg.from_user.id}) из-за превышения допустимого лимита значения (> 500)")
             await msg.reply("*❌ Слишком большое сообщение для обработки. Максимальное количество символов: 500*", parse_mode="markdown")
 
 while True:
